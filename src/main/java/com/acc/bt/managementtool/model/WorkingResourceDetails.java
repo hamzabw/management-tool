@@ -5,7 +5,7 @@ public class WorkingResourceDetails {
 	private String primaryDomain;
 	private String assignedDomain;
 	private String requestedBy;
-	private ResourceStatus status;
+	private char status;
 	
 	public String getPrimaryDomain() {
 		return primaryDomain;
@@ -25,10 +25,10 @@ public class WorkingResourceDetails {
 	public void setRequestedBy(String requestedBy) {
 		this.requestedBy = requestedBy;
 	}
-	public ResourceStatus getStatus() {
+	public char getStatus() {
 		return status;
 	}
-	public void setStatus(ResourceStatus status) {
+	public void setStatus(char status) {
 		this.status = status;
 	}
 }

@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,12 +23,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.acc.bt.managementtool.model.Domain;
+import com.acc.bt.managementtool.model.PooledResource;
 import com.acc.bt.managementtool.model.Resource;
 import com.acc.bt.managementtool.model.ResourceAttendance;
 import com.acc.bt.managementtool.model.ResourceDetails;
 import com.acc.bt.managementtool.model.ResourceDomain;
 import com.acc.bt.managementtool.model.ResourcePool;
-import com.acc.bt.managementtool.model.ResourceStatus;
 import com.acc.bt.managementtool.model.TeamLeadDetails;
 import com.acc.bt.managementtool.model.WorkingResourceDetails;
 import com.acc.bt.managementtool.repo.ResourceAttendanceRepo;
@@ -91,11 +92,68 @@ public class ManagementToolController {
 	}
 	
 	@RequestMapping("/resource/pool/{iuser}")
-	public void getResourcePool(@PathVariable long iuser) {
+	public List<PooledResource> getResourcePool(@PathVariable long iuser) {
+		Resource resource = resourceRepo.findByIuser(iuser);
+		Domain primaryDomain = getPrimaryDomain(resource.getResourceDomains());
 		List<ResourcePool> resourcePools = resourcePoolRepo.findAllByDate(getTodayDate());
+		List<PooledResource> pooledResources = new ArrayList<>();
 		if(null != resourcePools && !resourcePools.isEmpty()) {
-			
+			for(ResourcePool rp : resourcePools) {
+				Resource rs = rp.getResource();
+				List<ResourceDomain> resourceDomains = rs.getResourceDomains();
+				if(null != resourceDomains && !resourceDomains.isEmpty()) {
+					for(ResourceDomain rd : resourceDomains) {
+						if(rd.getDomain().equals(primaryDomain)) {
+							PooledResource pr = new PooledResource();
+							pr.setId(rs.getId());
+							pr.setIuser(rs.getIuser());
+							pr.setName(rs.getName());
+							pr.setStatus(rp.getStatus());
+							pr.setRequestedBy(rp.getRequestedBy().getName());
+							pooledResources.add(pr);
+							break;
+						}
+					}
+					
+				}
+			}
 		}
+		return pooledResources;
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/resource/release/{iuser}")
+	public List<ResourcePool> releaseResources(@RequestBody List<Integer> resourceIds, @PathVariable long iuser) {
+		resourceRepo.findByIuser(iuser);
+		List<ResourcePool> resourcePools = new ArrayList<>(); 
+		if(null != resourceIds && !resourceIds.isEmpty()) {
+			for(Integer id : resourceIds) {
+				Resource rs = resourceRepo.findById(id);
+				ResourcePool rp = new ResourcePool();
+				rp.setResource(rs);
+				rp.setDate(getTodayDate());
+				rp.setStatus('A');
+				rp = resourcePoolRepo.save(rp);
+				resourcePools.add(rp);
+			}
+		}
+		return resourcePools;
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/resource/request/{iuser}")
+	public List<ResourcePool> requestResources(@RequestBody List<Integer> resourceIds, @PathVariable long iuser) {
+		Resource resource = resourceRepo.findByIuser(iuser);
+		List<ResourcePool> resourcePools = new ArrayList<>(); 
+		if(null != resourceIds && !resourceIds.isEmpty()) {
+			for(Integer id : resourceIds) {
+				Resource rs = resourceRepo.findById(id);
+				ResourcePool rp = resourcePoolRepo.findByResourceAndDate(rs, getTodayDate());
+				rp.setStatus('R');
+				rp.setRequestedBy(resource);
+				rp = resourcePoolRepo.save(rp);
+				resourcePools.add(rp);
+			}
+		}
+		return resourcePools;
 	}
 	
 	@RequestMapping("/resource/details/{iuser}")
@@ -110,21 +168,21 @@ public class ManagementToolController {
 				switch (resourcePool.getStatus()) {
 				case 'A':
 					wrDetails.setAssignedDomain("");
-					wrDetails.setStatus(ResourceStatus.AVAILABLE);
+					wrDetails.setStatus('A');
 					break;
 				case 'R':
 					wrDetails.setAssignedDomain(getPrimaryDomain(resourcePool.getRequestedBy().getResourceDomains()).getName());
-					wrDetails.setStatus(ResourceStatus.REQUESTED);
+					wrDetails.setStatus('R');
 					wrDetails.setRequestedBy(resourcePool.getRequestedBy().getName());
 					break;
 				case 'S':
 					wrDetails.setAssignedDomain(getPrimaryDomain(resourcePool.getRequestedBy().getResourceDomains()).getName());
-					wrDetails.setStatus(ResourceStatus.ASSIGNED);
+					wrDetails.setStatus('S');
 					wrDetails.setRequestedBy(resourcePool.getRequestedBy().getName());
 					break;
 				case 'J':
 					wrDetails.setAssignedDomain(getPrimaryDomain(resourcePool.getRequestedBy().getResourceDomains()).getName());
-					wrDetails.setStatus(ResourceStatus.REJECTED);
+					wrDetails.setStatus('J');
 					wrDetails.setRequestedBy(resourcePool.getRequestedBy().getName());
 					break;
 				default:
@@ -132,7 +190,7 @@ public class ManagementToolController {
 				}
 			} else {
 				wrDetails.setAssignedDomain(wrDetails.getPrimaryDomain());
-				wrDetails.setStatus(ResourceStatus.ASSIGNED);
+				wrDetails.setStatus('S');
 			}
 			resourceDetails.setWrDetails(wrDetails);
 		} else if(resource.getResourceRole().getRole().getId() == 2) {
@@ -184,4 +242,5 @@ public class ManagementToolController {
 		}
 		return null;
 	}
+	
 }

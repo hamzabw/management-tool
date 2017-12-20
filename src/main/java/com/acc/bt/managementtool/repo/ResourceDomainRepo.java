@@ -10,5 +10,6 @@ import com.acc.bt.managementtool.model.ResourceDomain;
 
 public interface ResourceDomainRepo extends JpaRepository<ResourceDomain, Long>, JpaSpecificationExecutor<ResourceDomain> {
 	
-	List<ResourceDomain> findAllByDomain(Domain domain);
+	List<ResourceDomain> findAllByDomainAndDomainType(Domain domain, char domainType);
+	
 }

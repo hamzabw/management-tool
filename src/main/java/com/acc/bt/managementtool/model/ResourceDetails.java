@@ -4,6 +4,7 @@ public class ResourceDetails {
 	
 	private WorkingResourceDetails wrDetails;
 	private TeamLeadDetails tlDetails;
+	private ReleaseManagerDetails rmDetails;
 	
 	public WorkingResourceDetails getWrDetails() {
 		return wrDetails;
@@ -16,6 +17,12 @@ public class ResourceDetails {
 	}
 	public void setTlDetails(TeamLeadDetails tlDetails) {
 		this.tlDetails = tlDetails;
+	}
+	public ReleaseManagerDetails getRmDetails() {
+		return rmDetails;
+	}
+	public void setRmDetails(ReleaseManagerDetails rmDetails) {
+		this.rmDetails = rmDetails;
 	}
 	
 }

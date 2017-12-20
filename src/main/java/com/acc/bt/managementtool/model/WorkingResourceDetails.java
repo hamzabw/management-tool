@@ -2,6 +2,7 @@ package com.acc.bt.managementtool.model;
 
 public class WorkingResourceDetails {
 	
+	private String name;
 	private String primaryDomain;
 	private String assignedDomain;
 	private String requestedBy;
@@ -30,5 +31,11 @@ public class WorkingResourceDetails {
 	}
 	public void setStatus(char status) {
 		this.status = status;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
 	}
 }

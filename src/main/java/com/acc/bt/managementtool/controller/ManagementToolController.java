@@ -23,7 +23,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.acc.bt.managementtool.model.Domain;
+import com.acc.bt.managementtool.model.DomainDetails;
 import com.acc.bt.managementtool.model.PooledResource;
+import com.acc.bt.managementtool.model.ReleaseManagerDetails;
 import com.acc.bt.managementtool.model.Resource;
 import com.acc.bt.managementtool.model.ResourceAttendance;
 import com.acc.bt.managementtool.model.ResourceDetails;
@@ -31,6 +33,7 @@ import com.acc.bt.managementtool.model.ResourceDomain;
 import com.acc.bt.managementtool.model.ResourcePool;
 import com.acc.bt.managementtool.model.TeamLeadDetails;
 import com.acc.bt.managementtool.model.WorkingResourceDetails;
+import com.acc.bt.managementtool.repo.DomainRepo;
 import com.acc.bt.managementtool.repo.ResourceAttendanceRepo;
 import com.acc.bt.managementtool.repo.ResourceDomainRepo;
 import com.acc.bt.managementtool.repo.ResourcePoolRepo;
@@ -54,6 +57,9 @@ public class ManagementToolController {
 	
 	@Autowired
 	private ResourceDomainRepo resourceDomainRepo;
+	
+	@Autowired
+	private DomainRepo domainRepo;
 	
 	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 	
@@ -156,71 +162,140 @@ public class ManagementToolController {
 		return resourcePools;
 	}
 	
+	@RequestMapping(method = RequestMethod.POST, value = "/resource/approve/{iuser}")
+	public List<ResourcePool> approveResources(@RequestBody List<Integer> resourceIds, @PathVariable long iuser) {
+		resourceRepo.findByIuser(iuser);
+		List<ResourcePool> resourcePools = new ArrayList<>(); 
+		if(null != resourceIds && !resourceIds.isEmpty()) {
+			for(Integer id : resourceIds) {
+				Resource rs = resourceRepo.findById(id);
+				ResourcePool rp = resourcePoolRepo.findByResourceAndDate(rs, getTodayDate());
+				rp.setStatus('S');
+				rp = resourcePoolRepo.save(rp);
+				resourcePools.add(rp);
+			}
+		}
+		return resourcePools;
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/resource/reject/{iuser}")
+	public List<ResourcePool> rejectResources(@RequestBody List<Integer> resourceIds, @PathVariable long iuser) {
+		resourceRepo.findByIuser(iuser);
+		List<ResourcePool> resourcePools = new ArrayList<>(); 
+		if(null != resourceIds && !resourceIds.isEmpty()) {
+			for(Integer id : resourceIds) {
+				Resource rs = resourceRepo.findById(id);
+				ResourcePool rp = resourcePoolRepo.findByResourceAndDate(rs, getTodayDate());
+				rp.setStatus('J');
+				rp = resourcePoolRepo.save(rp);
+				resourcePools.add(rp);
+			}
+		}
+		return resourcePools;
+	}
+	
 	@RequestMapping("/resource/details/{iuser}")
 	public ResourceDetails getResourceDetails(@PathVariable long iuser) {
 		Resource resource = resourceRepo.findByIuser(iuser);
 		ResourceDetails resourceDetails = new ResourceDetails();
 		if(resource.getResourceRole().getRole().getId() == 1) {
-			ResourcePool resourcePool = resourcePoolRepo.findByResourceAndDate(resource, getTodayDate());
-			WorkingResourceDetails wrDetails = new WorkingResourceDetails();
-			wrDetails.setPrimaryDomain(getPrimaryDomain(resource.getResourceDomains()).getName());
-			if(null != resourcePool) {
-				switch (resourcePool.getStatus()) {
-				case 'A':
-					wrDetails.setAssignedDomain("");
-					wrDetails.setStatus('A');
-					break;
-				case 'R':
-					wrDetails.setAssignedDomain(getPrimaryDomain(resourcePool.getRequestedBy().getResourceDomains()).getName());
-					wrDetails.setStatus('R');
-					wrDetails.setRequestedBy(resourcePool.getRequestedBy().getName());
-					break;
-				case 'S':
-					wrDetails.setAssignedDomain(getPrimaryDomain(resourcePool.getRequestedBy().getResourceDomains()).getName());
-					wrDetails.setStatus('S');
-					wrDetails.setRequestedBy(resourcePool.getRequestedBy().getName());
-					break;
-				case 'J':
-					wrDetails.setAssignedDomain(getPrimaryDomain(resourcePool.getRequestedBy().getResourceDomains()).getName());
-					wrDetails.setStatus('J');
-					wrDetails.setRequestedBy(resourcePool.getRequestedBy().getName());
-					break;
-				default:
-					break;
-				}
-			} else {
-				wrDetails.setAssignedDomain(wrDetails.getPrimaryDomain());
-				wrDetails.setStatus('S');
-			}
-			resourceDetails.setWrDetails(wrDetails);
+			resourceDetails.setWrDetails(getWrDetails(resource));
 		} else if(resource.getResourceRole().getRole().getId() == 2) {
-			TeamLeadDetails tlDetails = new TeamLeadDetails();
-			List<ResourceDomain> resourceDomains = resourceDomainRepo.findAllByDomain(getPrimaryDomain(resource.getResourceDomains()));
-			if(null != resourceDomains && !resourceDomains.isEmpty()) {
-				List<Resource> fixedResources = new ArrayList<>();
-				for(ResourceDomain domain : resourceDomains) {
-					Resource res = domain.getResource();
-					if(res.getIuser() != iuser) {
-						ResourcePool resourcePool = resourcePoolRepo.findByResourceAndDate(res, getTodayDate());
-						if(null == resourcePool) {
-							fixedResources.add(res);
-						}
-					}
-				}
-				tlDetails.setFixedResources(fixedResources);
-			}
-			List<ResourcePool> resourcePools = resourcePoolRepo.findAllByRequestedByAndStatusAndDate(resource, 'S', getTodayDate());
-			if(null != resourcePools && !resourcePools.isEmpty()) {
-				List<Resource> pooledResources = new ArrayList<>();
-				for(ResourcePool rp : resourcePools) {
-					pooledResources.add(rp.getResource());
-				}
-				tlDetails.setPooledResources(pooledResources);
-			}
-			
-			resourceDetails.setTlDetails(tlDetails);
+			resourceDetails.setTlDetails(getTlDetails(resource));
+		} else if(resource.getResourceRole().getRole().getId() == 3) {
+			resourceDetails.setRmDetails(getRmDetails());
 		} 
 		return resourceDetails;
+	}
+	
+	private ReleaseManagerDetails getRmDetails() {
+		ReleaseManagerDetails rmDetails = new ReleaseManagerDetails();
+		List<ResourcePool> resourcePools = resourcePoolRepo.findAllByDate(getTodayDate());
+		List<PooledResource> pooledResources = new ArrayList<>();
+		if(null != resourcePools && !resourcePools.isEmpty()) {
+			for(ResourcePool rp : resourcePools) {
+				Resource rs = rp.getResource();
+				PooledResource pr = new PooledResource();
+				pr.setId(rs.getId());
+				pr.setIuser(rs.getIuser());
+				pr.setName(rs.getName());
+				pr.setStatus(rp.getStatus());
+				pr.setRequestedBy(rp.getRequestedBy().getName());
+				pooledResources.add(pr);
+			}
+		}
+		rmDetails.setPooledResources(pooledResources);
+		List<Domain> domains = domainRepo.findAll();
+		for(Domain domain : domains) {
+			List<ResourceDomain> resourceDomains = resourceDomainRepo.findAllByDomainAndDomainType(domain, 'P');
+			DomainDetails domDetails = new DomainDetails();
+			domDetails.setDomain(domain);
+			domDetails.setTotalCapacity(null != resourceDomains ? resourceDomains.size() : 0);
+		}
+		return rmDetails;
+	}
+	
+	private TeamLeadDetails getTlDetails(Resource resource) {
+		TeamLeadDetails tlDetails = new TeamLeadDetails();
+		List<ResourceDomain> resourceDomains = resourceDomainRepo.findAllByDomainAndDomainType(getPrimaryDomain(resource.getResourceDomains()), 'P');
+		if(null != resourceDomains && !resourceDomains.isEmpty()) {
+			List<Resource> fixedResources = new ArrayList<>();
+			for(ResourceDomain domain : resourceDomains) {
+				Resource res = domain.getResource();
+				if(res.getIuser() != resource.getIuser()) {
+					ResourcePool resourcePool = resourcePoolRepo.findByResourceAndDate(res, getTodayDate());
+					if(null == resourcePool) {
+						fixedResources.add(res);
+					}
+				}
+			}
+			tlDetails.setFixedResources(fixedResources);
+		}
+		List<ResourcePool> resourcePools = resourcePoolRepo.findAllByRequestedByAndStatusAndDate(resource, 'S', getTodayDate());
+		if(null != resourcePools && !resourcePools.isEmpty()) {
+			List<Resource> pooledResources = new ArrayList<>();
+			for(ResourcePool rp : resourcePools) {
+				pooledResources.add(rp.getResource());
+			}
+			tlDetails.setPooledResources(pooledResources);
+		}
+		return tlDetails;
+	}
+	
+	private WorkingResourceDetails getWrDetails(Resource resource) {
+		ResourcePool resourcePool = resourcePoolRepo.findByResourceAndDate(resource, getTodayDate());
+		WorkingResourceDetails wrDetails = new WorkingResourceDetails();
+		wrDetails.setPrimaryDomain(getPrimaryDomain(resource.getResourceDomains()).getName());
+		if(null != resourcePool) {
+			switch (resourcePool.getStatus()) {
+			case 'A':
+				wrDetails.setAssignedDomain("");
+				wrDetails.setStatus('A');
+				break;
+			case 'R':
+				wrDetails.setAssignedDomain(getPrimaryDomain(resourcePool.getRequestedBy().getResourceDomains()).getName());
+				wrDetails.setStatus('R');
+				wrDetails.setRequestedBy(resourcePool.getRequestedBy().getName());
+				break;
+			case 'S':
+				wrDetails.setAssignedDomain(getPrimaryDomain(resourcePool.getRequestedBy().getResourceDomains()).getName());
+				wrDetails.setStatus('S');
+				wrDetails.setRequestedBy(resourcePool.getRequestedBy().getName());
+				break;
+			case 'J':
+				wrDetails.setAssignedDomain(getPrimaryDomain(resourcePool.getRequestedBy().getResourceDomains()).getName());
+				wrDetails.setStatus('J');
+				wrDetails.setRequestedBy(resourcePool.getRequestedBy().getName());
+				break;
+			default:
+				break;
+			}
+		} else {
+			wrDetails.setAssignedDomain(wrDetails.getPrimaryDomain());
+			wrDetails.setStatus('S');
+		}
+		wrDetails.setName(resource.getName());
+		return wrDetails;
 	}
 	
 	private Date getTodayDate() {

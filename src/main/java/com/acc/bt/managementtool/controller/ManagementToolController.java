@@ -226,12 +226,26 @@ public class ManagementToolController {
 		}
 		rmDetails.setPooledResources(pooledResources);
 		List<Domain> domains = domainRepo.findAll();
+		List<DomainDetails> domainDetails = new ArrayList<>();
 		for(Domain domain : domains) {
 			List<ResourceDomain> resourceDomains = resourceDomainRepo.findAllByDomainAndDomainType(domain, 'P');
 			DomainDetails domDetails = new DomainDetails();
 			domDetails.setDomain(domain);
-			domDetails.setTotalCapacity(null != resourceDomains ? resourceDomains.size() : 0);
+			if(null != resourceDomains && !resourceDomains.isEmpty()) {
+				int totalCapacity = resourceDomains.size();
+				int resourceReleased = 0;
+				domDetails.setTotalCapacity(totalCapacity);
+				for(ResourceDomain rd : resourceDomains) {
+					ResourcePool rp = resourcePoolRepo.findByResourceAndDate(rd.getResource(), getTodayDate());
+					if(null != rp) {
+						resourceReleased++;
+					}
+				}
+				domDetails.setReleasedResources(resourceReleased);
+			}
+			domainDetails.add(domDetails);
 		}
+		rmDetails.setDomainDetails(domainDetails);
 		return rmDetails;
 	}
 	

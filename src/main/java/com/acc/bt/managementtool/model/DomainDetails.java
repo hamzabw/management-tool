@@ -3,8 +3,8 @@ package com.acc.bt.managementtool.model;
 public class DomainDetails {
 	private Domain domain;
 	private int totalCapacity;
-	private int todaysCapacity;
-	private int pendingRequests;
+	private int releasedResources;
+	
 	public Domain getDomain() {
 		return domain;
 	}
@@ -17,17 +17,11 @@ public class DomainDetails {
 	public void setTotalCapacity(int totalCapacity) {
 		this.totalCapacity = totalCapacity;
 	}
-	public int getTodaysCapacity() {
-		return todaysCapacity;
+	public int getReleasedResources() {
+		return releasedResources;
 	}
-	public void setTodaysCapacity(int todaysCapacity) {
-		this.todaysCapacity = todaysCapacity;
-	}
-	public int getPendingRequests() {
-		return pendingRequests;
-	}
-	public void setPendingRequests(int pendingRequests) {
-		this.pendingRequests = pendingRequests;
+	public void setReleasedResources(int releasedResources) {
+		this.releasedResources = releasedResources;
 	}
 	
 }

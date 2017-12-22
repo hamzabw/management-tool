@@ -1,0 +1,22 @@
+<div data-ng-controller="resourceController as ctrl" data-ng-init="ctrl.init()">
+	<div class="section">
+		<h2>Welcome {{ resource.name }} </h2>
+		<h4>Your today's status is {{ resource.status }}</h4>
+		<table class="table table-bordered table-striped table-hover">
+			<thead>
+				<tr>
+					<th><span>Primary Domain</span></th>
+					<th><span>Assigned Domain</span></th>
+					<th data-ng-show="resource.requestedBy"><span>Requested By</span></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>{{ resource.primaryDomain }}</td>
+					<td>{{ resource.assignedDomain }}</td>
+					<td data-ng-show="resource.requestedBy">{{ resource.requestedBy }}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>

@@ -1,0 +1,14 @@
+<div data-ng-controller="resourceMgrController as ctrl" data-ng-init="ctrl.init()">
+<div class="section">	
+	<div data-uib-tabset>
+		<div data-uib-tab data-heading="Domain">
+			<div data-ng-include data-src="content.domain">
+			</div>
+		</div>
+		<div data-uib-tab data-heading="Pool Requests">
+			<div data-ng-include data-src="content.requests">
+			</div>
+		</div>
+	</div>
+</div>
+</div>

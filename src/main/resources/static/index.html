@@ -1,27 +1,37 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en" data-ng-app="app" class="no-js">
 <head>
-<title>Hello AngularJS</title>
-<link href="css/angular-bootstrap.css" rel="stylesheet">
-<style type="text/css">
-[ng\:cloak], [ng-cloak], .ng-cloak {
-	display: none !important;
-}
-</style>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Management Tool</title>
+    <meta name="description" content="Tool to manage Resources and their daily assignment">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/webjars/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/webjars/ng-table/0.3.3/ng-table.min.css">
 </head>
+<body>
 
-<body ng-app="hello" ng-cloak class="ng-cloak">
-	<div ng-controller="navigation" class="container">
-		<ul class="nav nav-pills" role="tablist">
-			<li class="active"><a href="#/login">login</a></li>
-			<li ng-show="authenticated"><a href="http://cmdb.bfsec.bt.co.uk:8899/BT-Consumer/" target="_blank">Dashboard</a></li>
-			<li ng-show="authenticated"><a href="" ng-click="logout()">logout</a></li>
-		</ul>
-	</div>
-	<div ng-view class="container" id="container"></div>
-	<script src="js/jquery.min.js"></script>
-	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
-	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular-route.js"></script>
-	<script src="js/hello.js"></script>
+<div class="container" data-ng-view>
+</div>
+
+<script src="/webjars/angularjs/1.4.9/angular.js"></script>
+<script src="/webjars/angularjs/1.4.9/angular-resource.js"></script>
+<script src="/webjars/angularjs/1.4.9/angular-route.js"></script>
+<script src="/webjars/jquery/3.2.1/jquery.min.js"></script>
+<script src="/webjars/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="/webjars/angular-ui-bootstrap/2.2.0/ui-bootstrap-tpls.min.js"></script>
+<script src="/webjars/ng-table/0.3.3/ng-table.min.js"></script>
+<script src="/webjars/lodash/4.17.4/lodash.min.js"></script>
+
+<script src="/js/app.js"></script>
+
+<script src="/js/services/data.js"></script>
+
+<script src="/js/controllers/login.js"></script>
+<script src="/js/controllers/resource.js"></script>
+<script src="/js/controllers/lead.js"></script>
+<script src="/js/controllers/resource-pool.js"></script>
+<script src="/js/controllers/manager.js"></script>
+
 </body>
 </html>

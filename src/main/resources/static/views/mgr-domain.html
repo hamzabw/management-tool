@@ -1,0 +1,40 @@
+<div data-ng-controller="resourceMgrController as ctrl"
+	data-ng-init="ctrl.initMgrDomain()">
+	<div class="section">
+		<div>
+			<table class="table table-bordered table-striped table-hover">
+				<thead>
+					<tr>
+						<th>
+							<div>Domain Name</div>
+						</th>
+						<th>
+							<div>Total Capacity</div>
+						</th>
+						<th>
+							<div>Released Resources</div>
+						</th>
+						<th>
+							<div>Team Name</div>
+						</th>
+						<th>
+							<div>Chargeability Type</div>
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr data-ng-repeat="domain in domains">
+						<td>{{ domain.domain.name }}</td>
+						<td>{{ domain.totalCapacity }}</td>
+						<td>{{ domain.releasedResources}}</td>
+						<td>{{ domain.domain.team.name }}</td>
+						<td>{{ domain.domain.team.chargeabilityType.name }}</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="pull-right">
+			<a class="btn btn-link btn-lg" target="_blank" href="http://cmdb.bfsec.bt.co.uk:8899/BT-Consumer/">View Statistics</a>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,36 @@
+<div class="modal fade" id="myModal" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Available Resources from Pool</h4>
+					</div>
+					<div class="modal-body">
+						<div class="row" data-ng-controller="resourcePoolController as reso"
+							data-ng-init="ctrl.init()">
+							<table class="table table-bordered table-striped table-hover">
+								<thead>
+									<tr>
+										<th>Name</th>
+										<th>IUSER</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr data-ng-repeat="row in data.slice(((currentPage-1)*itemsPerPage), ((currentPage)*itemsPerPage))">
+										<td>
+											<input id="{{row.iuser}}" type="checkbox" data-ng-model="row.Selected" />
+										</td>
+										<td>{{row.name}}</td>
+										<td>{{row.id}}</td>
+									</tr>
+								</tbody>
+							</table>
+							<span data-uib-pagination class="pagination-sm" data-ng-model="currentPage" data-total-items="data.length" data-items-per-page="itemsPerPage" data-max-size="5" data-boundary-links="false"></span>
+							<button type="button" class="btn btn-info btn-lg" data-dismiss="modal" data-ng-click="requestResource()">Request</button>
+							<button type="button" class="btn btn-info btn-lg" data-dismiss="modal">Close</button>
+						</div>
+					</div>
+					<div class="modal-footer"></div>
+				</div>
+			</div>
+		</div>

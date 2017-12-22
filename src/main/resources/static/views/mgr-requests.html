@@ -1,0 +1,50 @@
+<div data-ng-controller="resourceMgrController as ctrl"
+	data-ng-init="ctrl.initMgrRequests()">
+	<div class="section">
+		<div data-ng-show="pooledResources.length > 0">
+			<table class="table table-bordered table-striped table-hover">
+				<thead>
+					<tr>
+						<th>Select</th>
+						<th>
+							<div>IUSER</div>
+						</th>
+						<th>
+							<div>Resource Name</div>
+						</th>
+						<th>
+							<div>Status</div>
+						</th>
+						<th>
+							<div>Requested By</div>
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr data-ng-repeat="resource in pooledResources | limitTo : itemsPerPage : (currentPage - 1)*itemsPerPage">
+						<td>
+							<input data-ng-show="resource.requested" id="{{resource.id}}" type="checkbox" data-ng-model="resource.selected" />
+						</td>
+						<td>{{ resource.iuser }}</td>
+						<td>{{ resource.name }}</td>
+						<td>{{ resource.statusName }}</td>
+						<td>						
+							{{ resource.requestedBy }}
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<span data-ng-show="pooledResources.length > itemsPerPage" data-uib-pagination class="pagination-sm" data-ng-model="currentPage" data-total-items="pooledResources.length"
+				data-items-per-page="itemsPerPage" data-max-size="5" data-boundary-links="true">
+			</span>
+
+			<div class="pull-right">
+				<button class="btn btn-info" data-ng-click="ctrl.approve()">Approve</button>
+				<button class="btn btn-info" data-ng-click="ctrl.reject()">Reject</button>
+			</div>
+		</div>
+		<div data-ng-show="pooledResources.length === 0">
+			<strong>No Pending Requests</strong>
+		</div>
+	</div>
+</div>

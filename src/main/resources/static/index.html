@@ -14,10 +14,11 @@
 	<div ng-controller="navigation" class="container">
 		<ul class="nav nav-pills" role="tablist">
 			<li class="active"><a href="#/login">login</a></li>
+			<li ng-show="authenticated"><a href="http://cmdb.bfsec.bt.co.uk:8899/BT-Consumer/" target="_blank">Dashboard</a></li>
 			<li ng-show="authenticated"><a href="" ng-click="logout()">logout</a></li>
 		</ul>
 	</div>
-	<div ng-view class="container"></div>
+	<div ng-view class="container" id="container"></div>
 	<script src="js/jquery.min.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular-route.js"></script>

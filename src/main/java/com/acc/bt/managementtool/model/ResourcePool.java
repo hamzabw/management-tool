@@ -31,7 +31,7 @@ public class ResourcePool {
 	private char status;
 
 	@ManyToOne
-	@JoinColumn(name = "requested_by", nullable = false)
+	@JoinColumn(name = "requested_by", nullable = true)
 	private Resource requestedBy;
 
 	public Integer getId() {

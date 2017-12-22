@@ -16,9 +16,23 @@ angular.module('hello', [ 'ngRoute' ])
 
   })
   .controller('home', function($scope, $http) {
-    $http.get('/resource/').success(function(data) {
-      $scope.greeting = data;
-    })
+//    $http.get('/resource/').success(function(data) {
+//      $scope.greeting = data;
+//    })
+	  $.ajaxPrefilter( function (options) {
+		  if (options.crossDomain && jQuery.support.cors) {
+			    var http = (window.location.protocol === 'http:' ? 'http:' : 'https:');
+			    options.url = http + '//cors-anywhere.herokuapp.com/' + options.url;
+			    //options.url = "http://cors.corsproxy.io/url=" + options.url;
+			  }
+			});
+
+			$.get(
+			    'http://cmdb.bfsec.bt.co.uk:8899/BT-Consumer/',
+			    function (response) {
+			        console.log("> ", response);
+			        $("#dashboardContent").html(response);
+			});
   })
   .controller('navigation', function($rootScope, $scope, $http, $location) {
 

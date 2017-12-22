@@ -3,8 +3,8 @@ package com.acc.bt.managementtool.repo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-import com.acc.bt.managementtool.model.Domain;
+import com.acc.bt.managementtool.model.ResourceRole;
 
-public interface DomainRepo extends JpaRepository<Domain, Long>, JpaSpecificationExecutor<Domain> {
-	Domain findById(Integer id);
+public interface ResourceRoleRepo extends JpaRepository<ResourceRole, Long>, JpaSpecificationExecutor<ResourceRole> {
+
 }

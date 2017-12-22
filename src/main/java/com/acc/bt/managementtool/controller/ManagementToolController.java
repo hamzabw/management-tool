@@ -31,6 +31,8 @@ import com.acc.bt.managementtool.model.ResourceAttendance;
 import com.acc.bt.managementtool.model.ResourceDetails;
 import com.acc.bt.managementtool.model.ResourceDomain;
 import com.acc.bt.managementtool.model.ResourcePool;
+import com.acc.bt.managementtool.model.ResourceRole;
+import com.acc.bt.managementtool.model.ResourceStore;
 import com.acc.bt.managementtool.model.TeamLeadDetails;
 import com.acc.bt.managementtool.model.WorkingResourceDetails;
 import com.acc.bt.managementtool.repo.DomainRepo;
@@ -38,6 +40,8 @@ import com.acc.bt.managementtool.repo.ResourceAttendanceRepo;
 import com.acc.bt.managementtool.repo.ResourceDomainRepo;
 import com.acc.bt.managementtool.repo.ResourcePoolRepo;
 import com.acc.bt.managementtool.repo.ResourceRepo;
+import com.acc.bt.managementtool.repo.ResourceRoleRepo;
+import com.acc.bt.managementtool.repo.RoleRepo;
 import com.acc.bt.managementtool.util.CustomRsqlVisitor;
 
 import cz.jirutka.rsql.parser.RSQLParser;
@@ -61,6 +65,12 @@ public class ManagementToolController {
 	@Autowired
 	private DomainRepo domainRepo;
 	
+	@Autowired
+	private RoleRepo roleRepo;
+	
+	@Autowired
+	private ResourceRoleRepo resourceRoleRepo;
+	
 	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 	
 	@RequestMapping(method = RequestMethod.GET, value = "/resource/query")
@@ -82,6 +92,34 @@ public class ManagementToolController {
 	@RequestMapping("/user")
 	public Principal user(Principal user) {
 	   return user;
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/resource/save")
+	public void saveResource(@RequestBody ResourceStore resourceStore) {
+		Resource resource = new Resource();
+		resource.setIuser(resourceStore.getIuser());
+		resource.setName(resourceStore.getName());
+		resource = resourceRepo.save(resource);
+		List<ResourceDomain> resourceDomains = new ArrayList<>();
+		ResourceDomain rd = new ResourceDomain();
+		rd.setResource(resource);
+		rd.setDomainType('P');
+		rd.setDomain(domainRepo.findById(resourceStore.getPrimaryDomain()));
+		resourceDomains.add(rd);
+		if(null != resourceStore.getSecondaryDomains() && !resourceStore.getSecondaryDomains().isEmpty()) {
+			for(int id : resourceStore.getSecondaryDomains()) {
+				ResourceDomain srd = new ResourceDomain();
+				srd.setResource(resource);
+				srd.setDomainType('S');
+				srd.setDomain(domainRepo.findById(id));
+				resourceDomains.add(srd);
+			}
+		}
+		resourceDomainRepo.save(resourceDomains);
+		ResourceRole role = new ResourceRole();
+		role.setResource(resource);
+		role.setRole(roleRepo.findById(resourceStore.getRoleId()));
+		resourceRoleRepo.save(role);
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/resource/attendance/{iuser}")
@@ -115,7 +153,7 @@ public class ManagementToolController {
 							pr.setIuser(rs.getIuser());
 							pr.setName(rs.getName());
 							pr.setStatus(rp.getStatus());
-							pr.setRequestedBy(rp.getRequestedBy().getName());
+							pr.setRequestedBy((rp.getRequestedBy() != null) ? rp.getRequestedBy().getName() : null);
 							pooledResources.add(pr);
 							break;
 						}
@@ -220,7 +258,7 @@ public class ManagementToolController {
 				pr.setIuser(rs.getIuser());
 				pr.setName(rs.getName());
 				pr.setStatus(rp.getStatus());
-				pr.setRequestedBy(rp.getRequestedBy().getName());
+				pr.setRequestedBy((rp.getRequestedBy() != null) ? rp.getRequestedBy().getName() : null);
 				pooledResources.add(pr);
 			}
 		}
